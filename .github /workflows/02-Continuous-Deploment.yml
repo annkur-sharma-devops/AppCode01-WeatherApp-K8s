@@ -1,0 +1,44 @@
+name: 02-Continuous-Deploment - Update K8s Manifests & Secrets
+
+on:
+  workflow_dispatch:
+    inputs:
+      BUILD_VERSION:
+        description: 'Docker image tag to deploy'
+        required: true
+        default: 'latest'
+
+env:
+  ACR_PATH: "cxdksf102326acr.azurecr.io"
+
+permissions:
+  contents: write
+
+jobs:
+  update-manifests:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create/Update Kubernetes Secret
+        run: |
+          kubectl create secret generic weather-secrets `
+            --from-literal=OPENWEATHER_API_KEY=${{ secrets.OPENWEATHER_API_KEY }} `
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Update Kubernetes manifest (PowerShell)
+        shell: powershell
+        run: |
+          $file = "k8s/deployment.yaml"
+          $content = Get-Content $file
+          $newContent = $content -replace 'image: .*', "image: ${{ env.ACR_PATH }}/myapp:${{ github.event.inputs.BUILD_VERSION }}   # <-- updated by pipeline"
+          Set-Content $file $newContent
+
+      - name: Commit manifest update
+        shell: powershell
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add k8s/deployment.yaml
+          git commit -m "Update deployment.yaml with image tag ${{ github.event.inputs.BUILD_VERSION }}"
+          git push
