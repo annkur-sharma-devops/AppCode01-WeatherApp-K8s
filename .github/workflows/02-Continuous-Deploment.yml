@@ -9,7 +9,7 @@ on:
         default: 'latest'
 
 env:
-  ACR_PATH: "cxdksf102326acr.azurecr.io"
+  ACR_PATH: "qmcfsy112622acr.azurecr.io"
 
 permissions:
   contents: write
