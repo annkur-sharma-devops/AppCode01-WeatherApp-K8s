@@ -26,14 +26,14 @@ jobs:
           echo "payload build_version=${{ github.event.client_payload.build_version }}"
 
       - name: Create/Update Kubernetes Secret
-        shell: pwsh
+        shell: powershell
         run: |
           kubectl create secret generic weather-secrets `
             --from-literal=OPENWEATHER_API_KEY=${{ secrets.OPENWEATHER_API_KEY }} `
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Update Kubernetes manifest (PowerShell)
-        shell: pwsh
+        shell: powershell
         run: |
           $build = '${{ github.event.client_payload.build_version }}'
           if ([string]::IsNullOrWhiteSpace($build)) {
@@ -52,7 +52,7 @@ jobs:
           Set-Content -Path $file -Value $new
 
       - name: Commit & Push manifest update (only if changed)
-        shell: pwsh
+        shell: powershell
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
