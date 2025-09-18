@@ -63,7 +63,7 @@ jobs:
           if (-not [string]::IsNullOrWhiteSpace($status)) {
             git add k8s/deployment.yaml
             # git commit -m "Update deployment.yaml with image tag $('{{ github.event.client_payload.build_version }}')"
-            git commit -m "Update deployment.yaml with image tag ${{ github.event.client_payload.build_version }}
+            git commit -m "Update deployment.yaml with image tag ${{ github.event.client_payload.build_version }}"
             git push
             Write-Host "Pushed manifest update."
           } else {
