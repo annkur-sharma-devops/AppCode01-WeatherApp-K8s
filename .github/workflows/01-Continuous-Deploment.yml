@@ -1,0 +1,71 @@
+name: 02-Continuous-Deployment - Update K8s Manifests & Secrets
+
+on:
+  repository_dispatch:
+    types: [ new-image-built ]
+
+env:
+  ACR_PATH: "qmcfsy112622acr.azurecr.io"
+
+permissions:
+  contents: write
+
+jobs:
+  update-manifests:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true    # allows git push with GITHUB_TOKEN
+          fetch-depth: 0
+
+      - name: Show incoming payload (debug)
+        run: |
+          echo "payload build_version=${{ github.event.client_payload.build_version }}"
+
+      - name: Create/Update Kubernetes Secret
+        shell: powershell
+        run: |
+          kubectl create secret generic weather-secrets `
+            --from-literal=OPENWEATHER_API_KEY=${{ secrets.OPENWEATHER_API_KEY }} `
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Update Kubernetes manifest (PowerShell)
+        shell: powershell
+        run: |
+          $build = '${{ github.event.client_payload.build_version }}'
+          if ([string]::IsNullOrWhiteSpace($build)) {
+            Write-Host "ERROR: build_version missing in payload"
+            exit 1
+          }
+          Write-Host "Updating deployment.yaml to use image tag: $build"
+          $file = "k8s/deployment.yaml"
+          if (-not (Test-Path $file)) {
+            Write-Host "ERROR: $file not found"
+            exit 1
+          }
+          $content = Get-Content $file -Raw
+          # Replace the entire image line (robust)
+          $new = $content -replace 'image:\s*\S+', "image: $env:ACR_PATH/myapp:$build"
+          Set-Content -Path $file -Value $new
+
+      - name: Commit & Push manifest update (only if changed)
+        shell: powershell
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # show status for debugging
+          git status --porcelain
+          $status = (git status --porcelain)
+          if (-not [string]::IsNullOrWhiteSpace($status)) {
+            git add k8s/deployment.yaml
+            # git commit -m "Update deployment.yaml with image tag $('{{ github.event.client_payload.build_version }}')"
+            git commit -m "Update deployment.yaml with image tag ${{ github.event.client_payload.build_version }}"
+            git push
+            Write-Host "Pushed manifest update."
+          } else {
+            Write-Host "No changes to commit."
+          }
