@@ -1,4 +1,4 @@
-name: 02-Continuous-Deployment - Update K8s Manifests & Secrets
+name: 01-Continuous-Deployment - Update K8s Manifests & Secrets
 
 on:
   repository_dispatch:
