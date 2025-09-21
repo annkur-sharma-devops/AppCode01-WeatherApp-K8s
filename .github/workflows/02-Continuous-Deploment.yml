@@ -2,10 +2,10 @@ name: 02-Continuous-Deployment - Update K8s Manifests & Secrets
 
 on:
   repository_dispatch:
-    types: [ new-image-built ]
+    types: [ new-image-built-02-ci ]
 
 env:
-  ACR_PATH: "qmcfsy112622acr.azurecr.io"
+  ACR_PATH: "nierom031143acr.azurecr.io"
 
 permissions:
   contents: write
