@@ -5,7 +5,7 @@ on:
     types: [ new-image-built-02-ci ]
 
 env:
-  ACR_PATH: "nierom031143acr.azurecr.io"
+  ACR_PATH: "whvtqa122836acr.azurecr.io"
 
 permissions:
   contents: write
