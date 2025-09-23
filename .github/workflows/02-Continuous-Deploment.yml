@@ -11,8 +11,10 @@ permissions:
   contents: write
 
 jobs:
-  update-manifests:
+  Continuous-Deployment:
     runs-on: self-hosted
+    environment:
+      name: production  # <- this enables manual approval
 
     steps:
       - name: Checkout repo
