@@ -34,6 +34,11 @@ jobs:
             --from-literal=OPENWEATHER_API_KEY=${{ secrets.OPENWEATHER_API_KEY }} `
             --dry-run=client -o yaml | kubectl apply -f -
 
+      - name: Pull latest git repo
+        shell: powershell
+        run: |
+          git pull
+
       - name: Update Kubernetes manifest (PowerShell)
         shell: powershell
         run: |
